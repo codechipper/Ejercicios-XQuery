@@ -1,0 +1,83 @@
+<!-- 1. Return the area of Mongolia. -->
+
+<!-- Reminder: To return the value of an attribute attr, you must use data(@attr), although just @attr may be used in comparisons. You will need to remember this for some later questions as well. -->
+
+//country[@name = "Mongolia"]/data(@area)
+
+
+<!-- 2. Return the names of all cities that have the same name as the country in which they are located. -->
+
+//city[name = parent::country/data(@name)]/name
+
+
+<!-- 3. Return the average population of Russian-speaking countries. -->
+
+avg(//country[language = 'Russian']/data(@population))
+
+
+<!-- 4. Return the names of all countries that have at least three cities with population greater than 3 million. -->
+
+//country[count(city[population > 3000000]) >= 3]/data(@name)
+
+
+<!-- 5. Create a list of French-speaking and German-speaking countries. The result should take the form: -->
+
+<!-- 
+<result>
+  <French>
+    <country>country-name</country>
+    <country>country-name</country>
+    ...
+  </French>
+  <German>
+    <country>country-name</country>
+    <country>country-name</country>
+    ...
+  </German>
+</result>
+-->
+
+let $countries := //country
+return
+  <result>
+    <French>
+      {
+        for $country in $countries[language = 'French']
+        return
+          <country>{ $country/data(@name) }</country>
+      }
+    </French>
+    <German>
+      {
+        for $country in $countries[language = 'German']
+        return
+          <country>{ $country/data(@name) }</country>
+      }
+    </German>
+  </result>
+
+
+<!-- 6. Return the countries with the highest and lowest population densities. Note that because the "/" operator has its own meaning in XPath and XQuery, the division operator is infix "div". To compute population density use "(@population div @area)". You can assume density values are unique. The result should take the form: -->
+
+<!-- 
+<result>
+  <highest density="value">country-name</highest>
+  <lowest density="value">country-name</lowest>
+</result>
+-->
+
+let $countries                    := //country
+let $population_density           := $countries/(@population div @area)
+let $highest_density              := max($population_density)
+let $country_with_highest_density := $countries[(@population div @area) = $highest_density]
+let $lowest_density               := min($population_density)
+let $country_with_lowest_density  := $countries[(@population div @area) = $lowest_density]
+return
+  <result>
+    <highest density="{ $highest_density }">
+      { $country_with_highest_density/data(@name) }
+    </highest>
+    <lowest density="{ $lowest_density }">
+      { $country_with_lowest_density/data(@name) }
+    </lowest>
+  </result>
